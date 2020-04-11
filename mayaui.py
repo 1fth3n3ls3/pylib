@@ -1,42 +1,42 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 
-class ConverterWindow(QtWidgets.QMainWindow):
-    converPressed = QtCore.Signal(str)
-    def __init__(self, parent=None):
-        super(ConverterWindow, self).__init__(parent)
-        
-
-
-def createWindow():
-    window =  ConverterWindow()
-    window.setWindowTitle('Hierarchy Converter')
-
-    container = QtWidgets.QWidget(window)
+class Window(QtWidgets.QMainWindow):
+    convertPressed = QtCore.Signal(str)
+    def __init__(self, title=None, parent=None):
+        super(Window, self).__init__(parent=parent)
+        self.container = QtWidgets.QWidget(self)
 
     
+        self.configureWidgets()
+        self.connectEvents()
 
-    layout = QtWidgets.QHBoxLayout(container)
-    container.setLayout(layout)
-    label = QtWidgets.QLabel('Prefix: ', container)
-    textBox = QtWidgets.QLineEdit(container)
-    button = QtWidgets.QPushButton('Convert', container)
-    layout.addWidget(label)
-    layout.addWidget(textBox)
-    layout.addWidget(button)
-    window.setCentralWidget(container)
+    def configureWidgets(self):
+        self.layout = QtWidgets.QHBoxLayout(self.container)
+        self.container.setLayout(self.layout)
+        self.label = QtWidgets.QLabel('Prefix: ', self.container)
+        self.textBox = QtWidgets.QLineEdit(self.container)
+        self.button = QtWidgets.QPushButton('Convert', self.container)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.textBox)
+        self.layout.addWidget(self.button)
+        self.setCentralWidget(self.container)
 
-    def onClick():
-        window.converPressed.emit(textBox.tex())
-    
-    button.clicked.connect(onClick)
+    def connectEvents(self):
+        self.button.clicked.connect(self.onClick)
 
-    return window
+    # events
+    def onClick(self):
+        self.convertPressed.emit(self.textBox.text())
     
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-    win = createWindow()
+    win = Window('Hierarchy Converter')
 
+    def onConvert(prefix):
+        print('Convert clicked! Prefix:', prefix)
+
+    win.convertPressed.connect(onConvert)
     win.show()
 
     app.exec_()
