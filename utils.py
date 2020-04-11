@@ -1,4 +1,5 @@
 import pymel.core as pmc
+import time
 
 
 def firtsOrDefault(seq, predicate=None, default=None):
@@ -77,3 +78,81 @@ def chunkUndo(func):
            pmc.undoInfo(closeChunk=True)
     
     return inner
+
+class atTime(object):
+    def __init__(self, t):
+        self.t = t
+        self.oldt = None
+    def __enter__(self):
+        self.oldt = pmc.getCurrentTime()
+        pmc.setCurrentTime(self.t)
+    def __exit__(self, *_):
+        if self.oldt is not None:
+            pmc.setCurrentTime(self.oldt)
+
+class AnimationLayers(object):  
+    def __init__(self, *layers):
+        self.layers = layers
+        self.bufferLayers = None
+
+    def __enter__(self):
+        self.bufferLayers = self._getActiveLayers()
+
+        for each in self._getAnimLayers():
+            if each.name() not in self.layers:
+                pmc.mel.eval('animLayerMuteCallBack "{0}" "1";'.format(each.name()))
+                pmc.animLayer(each, edit=True, mute=True, lock=True)
+            else:
+                pmc.mel.eval('animLayerMuteCallBack "{0}" "1";'.format(each.name()))
+                pmc.animLayer(each, edit=True, mute=False, lock=False)
+        
+        pmc.mel.eval('updateEditorFeedbackAnimLayers("AnimLayerTab")')
+
+    def __exit__(self, *_):
+        if self.bufferLayers:
+            for each in self._getAnimLayers():
+                if each in self.bufferLayers:
+                    pmc.mel.eval('animLayerMuteCallBack "{0}" "1";'.format(each.name()))
+                    pmc.animLayer(each.name(), edit=True, lock=True)
+                    pmc.animLayer(each.name(), edit=True, mute=True)
+                else:
+                    pmc.mel.eval('animLayerMuteCallBack "{0}" "1";'.format(each.name()))
+                    pmc.animLayer(each.name(), edit=True, lock=False)
+                    pmc.animLayer(each.name(), edit=True, mute=False)
+            pmc.mel.eval('updateEditorFeedbackAnimLayers("AnimLayerTab")')
+            
+            print(_)
+
+    def _getActiveLayers(self):
+        animLayers = self._getAnimLayers()
+        return [layer for layer in animLayers if not self._isMuted(layer)]
+
+    def _getAnimLayers(self, predicate=None):
+        baseAnimLayer = self._getBaseAnimLayer()
+        animLayers = []
+        if baseAnimLayer:
+            animLayers.append(baseAnimLayer)
+            childrenLayers = pmc.animLayer(baseAnimLayer, query=True, children=True)
+            animLayers.extend(childrenLayers)
+        
+        return animLayers
+
+
+    def _getBaseAnimLayer(self):
+        return pmc.animLayer(query=True, root=True)
+
+    def _isMuted(self, layer):
+        return pmc.animLayer(layer, query=True, mute=True)
+
+    
+def readDuration(func):
+    def inner(*args, **kwargs):
+        startTime = time.clock()
+        result = func(*args, **kwargs)
+        endTime = time.clock()
+        print('{0} took {1} in execution'.format(func.__name__, (endTime-startTime)))
+        
+        return result
+    
+    return inner
+    
