@@ -2,15 +2,15 @@ from PySide2 import QtWidgets, QtCore, QtGui
 
 class Window(QtWidgets.QMainWindow):
     convertPressed = QtCore.Signal(str)
+    
     def __init__(self, title=None, parent=None):
         super(Window, self).__init__(parent=parent)
-        self.container = QtWidgets.QWidget(self)
-
-    
+        
         self.configureWidgets()
         self.connectEvents()
 
     def configureWidgets(self):
+        self.container = QtWidgets.QWidget(self)
         self.layout = QtWidgets.QHBoxLayout(self.container)
         self.container.setLayout(self.layout)
         self.label = QtWidgets.QLabel('Prefix: ', self.container)
