@@ -1,6 +1,23 @@
 import pymel.core as pmc
 import time
 
+import maya.OpenMayaUI as omui
+from shiboken2 import wrapInstance
+from PySide2 import QtGui, QtWidgets
+
+def getMayaWindow():
+    winptr = omui.MQtUtil.mainWindow()
+    if winptr is None:
+        raise RuntimeError('No maya window found.')
+    
+    window = wrapInstance(long(winptr), QtWidgets.QWidget)
+    
+
+    return window
+
+
+
+
 
 def firtsOrDefault(seq, predicate=None, default=None):
     for each in seq:
