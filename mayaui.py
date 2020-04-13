@@ -3,13 +3,15 @@ from PySide2 import QtWidgets, QtCore, QtGui
 class Window(QtWidgets.QMainWindow):
     convertPressed = QtCore.Signal(str)
     
-    def __init__(self, title=None, parent=None):
+    def __init__(self, controller, title=None, parent=None):
         super(Window, self).__init__(parent=parent)
-        
+        self.controller = controller
         self.configureWidgets()
         self.connectEvents()
 
+
     def configureWidgets(self):
+        
         self.container = QtWidgets.QWidget(self)
         self.layout = QtWidgets.QHBoxLayout(self.container)
         self.container.setLayout(self.layout)
@@ -23,20 +25,46 @@ class Window(QtWidgets.QMainWindow):
 
     def connectEvents(self):
         self.button.clicked.connect(self.onClick)
+        self.controller.selectionChanged.connect(self.updateStatusBar)
+
+    def updateStatusBar(self, newSel):
+        if not newSel:
+            txt = 'Nothing selected.'
+        elif len(newSel) == 1:
+            txt = '{0} selected'.format(newSel[0])
+        else:
+            txt = '{0} objects selected.'.format(str(len(newSel)))
+        self.statusBar().showMessage(txt)
 
     # events
     def onClick(self):
         self.convertPressed.emit(self.textBox.text())
     
+class ConvertHierarchyController(QtCore.QObject):
+    selectionChanged = QtCore.Signal(list)
 
-if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    win = Window('Hierarchy Converter')
+def _pytest():
+    import random
 
+    controller = ConvertHierarchyController()
+
+    def nextSel():
+        return random.choice([
+                                [],
+                                ['single'],
+                                ['single', 'double']])
+    
     def onConvert(prefix):
         print('Convert clicked! Prefix:', prefix)
+        controller.selectionChanged.emit(nextSel())
 
+    app = QtWidgets.QApplication([])
+    win = Window(controller, 'Hierarchy Converter')
     win.convertPressed.connect(onConvert)
     win.show()
 
     app.exec_()
+
+if __name__ == "__main__":
+
+    _pytest()
