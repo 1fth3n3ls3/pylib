@@ -3,9 +3,9 @@ from PySide2 import QtWidgets, QtCore, QtGui
 class Window(QtWidgets.QMainWindow):
     convertPressed = QtCore.Signal(str)
     
-    def __init__(self, controller, title=None, parent=None):
+    def __init__(self, title='', parent=None):
         super(Window, self).__init__(parent=parent)
-        self.controller = controller
+        self.setWindowTitle(title)
         self.configureWidgets()
         self.connectEvents()
 
@@ -25,7 +25,7 @@ class Window(QtWidgets.QMainWindow):
 
     def connectEvents(self):
         self.button.clicked.connect(self.onClick)
-        self.controller.selectionChanged.connect(self.updateStatusBar)
+        # self.controller.selectionChanged.connect(self.updateStatusBar)
 
     def updateStatusBar(self, newSel):
         if not newSel:
@@ -59,8 +59,9 @@ def _pytest():
         controller.selectionChanged.emit(nextSel())
 
     app = QtWidgets.QApplication([])
-    win = Window(controller, 'Hierarchy Converter')
+    win = Window('Hierarchy Converter')
     win.convertPressed.connect(onConvert)
+    controller.selectionChanged.connect(win.updateStatusBar)
     win.show()
 
     app.exec_()
