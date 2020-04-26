@@ -1,9 +1,11 @@
-import pymel.core as pmc
-import time
 
+import pymel.core as pmc
+import maya.cmds as cmds
 import maya.OpenMayaUI as omui
 from shiboken2 import wrapInstance
 from PySide2 import QtGui, QtWidgets
+
+import time
 
 def getMayaWindow():
     winptr = omui.MQtUtil.mainWindow()
@@ -96,6 +98,15 @@ def chunkUndo(func):
     
     return inner
 
+class undoOnError(object):
+    def __enter__(self):
+        pmc.undoInfo(openChunk=True)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pmc.undoInfo(closeChunk=True)
+        if exc_val is not None:
+            pmc.undo()
+
+
 class atTime(object):
     def __init__(self, t):
         self.t = t
@@ -106,6 +117,18 @@ class atTime(object):
     def __exit__(self, *_):
         if self.oldt is not None:
             pmc.setCurrentTime(self.oldt)
+
+class setFilePrompt(object):
+    def __init__(self, value):
+        self.value = value
+        self.buffer = None
+
+    def __enter__(self):
+        self.buffer = cmds.file(query=True, prompt=True)
+        cmds.file(prompt=self.value)
+
+    def __exit__(self, *_):
+        cmds.file(prompt=self.buffer)
 
 class AnimationLayers(object):  
     def __init__(self, *layers):
