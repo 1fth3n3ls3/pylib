@@ -37,8 +37,7 @@ def convert_hierarchies_main(settings=SETTINGS_DEFAULT):
 def convert_hierarchies(rootnodes, settings=SETTINGS_DEFAULT):
     roots = skeletonutils.uniqueroots(rootnodes)
     print('real roots:' + " ".join([node.name() for node in roots]))
-    result = [convert_hierarchy(r, settings) for r in roots]
-    return result
+    return [convert_hierarchy(r, settings) for r in roots]
 
 # (2)
 def convert_hierarchy(rootnode,  settings=SETTINGS_DEFAULT):

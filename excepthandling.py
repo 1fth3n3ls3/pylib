@@ -17,11 +17,7 @@ EMAIL_SERVER = 'smtp.yourdomain.com' # Your email server here
 
 
 def _collect_info():
-    lines = []
-    lines.append('Scene Info')
-    lines.append('  Maya Scene: ' + pmc.sceneName())
-
-    lines.append('Maya/Python Info')
+    lines = ['Scene Info', '  Maya Scene: ' + pmc.sceneName(), 'Maya/Python Info']
     lines.append('  Maya Version: ' + pmc.about(version=True))
     lines.append('  Qt Version: ' + pmc.about(qtVersion=True))
     lines.append('  Maya64: ' + str(pmc.about(is64=True)))
@@ -69,8 +65,7 @@ def _send_email_in_background(body):
 
 def _handle_our_exc(etype, evalue, tb, detail):
     s = maya.utils._formatGuiException(etype, evalue, tb, detail)
-    body = [s]
-    body.extend(_collect_info())
+    body = [s, *_collect_info()]
     _send_email_in_background('\n'.join(body))
     lines = [
         s,

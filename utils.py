@@ -11,11 +11,8 @@ def getMayaWindow():
     winptr = omui.MQtUtil.mainWindow()
     if winptr is None:
         raise RuntimeError('No maya window found.')
-    
-    window = wrapInstance(long(winptr), QtWidgets.QWidget)
-    
 
-    return window
+    return wrapInstance(long(winptr), QtWidgets.QWidget)
 
 
 
